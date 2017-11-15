@@ -4,7 +4,7 @@ maintainer_email 'mohit@sethis.in'
 license 'Apache v2.0'
 description 'Installs/Configures the Atom text editor'
 long_description 'Installs/Configures the Atom text editor - a hackable editor based on Electron, maintained by GitHub'
-version '0.2.0'
+version '0.2.40'
 
 recipe 'atom::default', 'Installs/Configures Atom'
 

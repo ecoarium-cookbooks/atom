@@ -19,6 +19,8 @@
 # limitations under the License.
 #
 
+require 'json'
+
 class Chef
   class Resource
     # Resource class for resource `atom_apm`
@@ -45,28 +47,47 @@ class Chef
   class Provider
     # Provider class for resource `atom_apm`
     class AtomApm < Chef::Provider
+
       def load_current_resource
         Chef::Log.debug("Loading current resource #{new_resource}")
 
         @current_resource = Chef::Resource::AtomApm.new(new_resource.name)
         @current_resource.name(new_resource.name)
 
-        # if package_exists?
-        #   # TODO: Seach if package exists: Leavign it for now
-        # end
         @current_resource
       end
 
+      def installed_packages
+        return @@installed_packages unless @@installed_packages.nil?
+
+        process = shell_out "apm list --json"
+        raw_json = JSON.parse process.stdout
+        user_packages = {}
+
+        raw_json['user'].each{|user_package|
+          user_packages[user_package['name']] = {
+            'version' => user_package['version']
+          }
+        }
+
+        @@installed_packages = user_packages
+      end
+
       def action_install
-        shell_out "apm install #{@current_resource.name}"
+        unless installed_packages.has_key?(current_resource.name)
+          shell_out "apm install #{current_resource.name}"
+          Chef::Log.info("#{new_resource} installed")
+        else
+          Chef::Log.debug("#{new_resource} is already installed")
+        end
       end
 
       def action_upgrade
-        shell_out "apm upgrade #{@current_resource.name}"
+        shell_out "apm upgrade #{current_resource.name}"
       end
 
       def action_uninstall
-        shell_out "apm uninstall #{@current_resource.name}"
+        shell_out "apm uninstall #{current_resource.name}"
       end
     end
   end
