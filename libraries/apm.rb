@@ -57,6 +57,7 @@ class Chef
         @current_resource
       end
 
+      @@installed_packages = nil
       def installed_packages
         return @@installed_packages unless @@installed_packages.nil?
 
